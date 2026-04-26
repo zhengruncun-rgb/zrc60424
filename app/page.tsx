@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useState } from "react";
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { DEFAULT_PLACEHOLDER, SAMPLE_CASES } from "@/lib/prompts";
 
 type ApiResponse = {
@@ -55,6 +55,8 @@ export default function HomePage() {
   const [selectedFeedback, setSelectedFeedback] = useState<(typeof feedbackOptions)[number] | "">("");
   const [feedbackText, setFeedbackText] = useState("");
   const [modelMode, setModelMode] = useState<ModelMode>("auto");
+  const [copiedCardTitle, setCopiedCardTitle] = useState("");
+  const copiedResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!loading) return;
@@ -65,6 +67,15 @@ export default function HomePage() {
 
     return () => clearInterval(timer);
   }, [loading]);
+
+
+  useEffect(() => {
+    return () => {
+      if (copiedResetTimerRef.current) {
+        clearTimeout(copiedResetTimerRef.current);
+      }
+    };
+  }, []);
 
   const cards = useMemo(
     () => [
@@ -112,10 +123,24 @@ export default function HomePage() {
     }
   }
 
-  async function copyCard(text: string) {
+  async function copyCard(title: string, text: string) {
     if (!text) return;
-    await navigator.clipboard.writeText(text);
-    setMessage("已复制到剪贴板。");
+
+    try {
+      await navigator.clipboard.writeText(text);
+      setCopiedCardTitle(title);
+      setMessage("已复制到剪贴板。");
+
+      if (copiedResetTimerRef.current) {
+        clearTimeout(copiedResetTimerRef.current);
+      }
+
+      copiedResetTimerRef.current = setTimeout(() => {
+        setCopiedCardTitle("");
+      }, 1500);
+    } catch {
+      setMessage("复制失败，请手动选择复制");
+    }
   }
 
   function submitFeedback() {
@@ -188,8 +213,8 @@ export default function HomePage() {
           <article className="card" key={card.title}>
             <div className="cardHead">
               <h2>{card.title}</h2>
-              <button type="button" className="copyBtn" onClick={() => copyCard(card.value)}>
-                复制
+              <button type="button" className="copyBtn" onClick={() => copyCard(card.title, card.value)}>
+                {copiedCardTitle === card.title ? "已复制" : "复制"}
               </button>
             </div>
             <pre>{card.value || "点击“生成讲评与反馈”后显示内容。"}</pre>
