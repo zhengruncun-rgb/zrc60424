@@ -48,8 +48,12 @@ export type GenerateResponse = {
   quality: QualityReport;
 };
 
-const model = process.env.OPENAI_MODEL || "gpt-4o-mini";
-const apiKey = process.env.OPENAI_API_KEY;
+export type ModelMode = "mock" | "auto" | "deepseek" | "kimi" | "openai";
+
+const provider = process.env.AI_PROVIDER || "openai";
+const apiKey = process.env.AI_API_KEY || process.env.OPENAI_API_KEY || "";
+const baseUrl = process.env.AI_BASE_URL || "https://api.openai.com/v1";
+const aiModel = process.env.AI_MODEL || process.env.OPENAI_MODEL || "gpt-4o-mini";
 
 const defaultExtracted: ExtractedInfo = {
   grade: "",
@@ -76,25 +80,39 @@ const defaultQuality: QualityReport = {
   issues: [],
 };
 
-async function callOpenAIJson<T>(instruction: string, payload: Record<string, unknown>): Promise<T> {
-  const response = await fetch("https://api.openai.com/v1/chat/completions", {
+async function callOpenAIJson<T>(
+  instruction: string,
+  payload: Record<string, unknown>,
+  activeProvider: string,
+): Promise<T> {
+  const requestBody: {
+    model: string;
+    temperature: number;
+    messages: Array<{ role: "system" | "user"; content: string }>;
+    response_format?: { type: "json_object" };
+  } = {
+    model: aiModel,
+    temperature: 0.3,
+    messages: [
+      { role: "system", content: SYSTEM_PROMPT },
+      {
+        role: "user",
+        content: `${instruction}\n\n请只返回 JSON，不要解释。\n\n输入数据：${JSON.stringify(payload, null, 2)}`,
+      },
+    ],
+  };
+
+  if (activeProvider === "openai") {
+    requestBody.response_format = { type: "json_object" };
+  }
+
+  const response = await fetch(`${baseUrl.replace(/\/$/, "")}/chat/completions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
     },
-    body: JSON.stringify({
-      model,
-      temperature: 0.3,
-      response_format: { type: "json_object" },
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        {
-          role: "user",
-          content: `${instruction}\n\n输入数据：${JSON.stringify(payload, null, 2)}`,
-        },
-      ],
-    }),
+    body: JSON.stringify(requestBody),
   });
 
   if (!response.ok) {
@@ -162,70 +180,97 @@ function buildMock(userInput: string): GenerateResponse {
   };
 }
 
+export async function generateFeedback(userInput: string, modelMode: ModelMode = "auto"): Promise<GenerateResponse> {
+  if (modelMode === "mock") {
 
 export async function generateFeedback(userInput: string): Promise<GenerateResponse> {
   if (!apiKey) {
     return buildMock(userInput);
   }
 
-  const extracted = {
-    ...defaultExtracted,
-    ...(await callOpenAIJson<Partial<ExtractedInfo>>(INFO_EXTRACTION_PROMPT, { userInput })),
-  };
+  if (!apiKey) {
+    return buildMock(userInput);
+  }
+  const activeProvider = modelMode === "auto" ? provider : modelMode;
 
-  const sceneResp = await callOpenAIJson<{ scene?: string }>(SCENE_CLASSIFICATION_PROMPT, {
-    userInput,
-    extracted,
-  });
+  try {
+    const extracted = {
+      ...defaultExtracted,
+      ...(await callOpenAIJson<Partial<ExtractedInfo>>(INFO_EXTRACTION_PROMPT, { userInput }, activeProvider)),
+    };
 
-  const scene = sceneResp.scene || "作业讲评";
-
-  let result = {
-    ...defaultResult,
-    ...(await callOpenAIJson<Partial<GeneratedResult>>(CONTENT_GENERATION_PROMPT, {
+    const sceneResp = await callOpenAIJson<{ scene?: string }>(SCENE_CLASSIFICATION_PROMPT, {
       userInput,
       extracted,
-      scene,
-    })),
-  };
+    }, activeProvider);
 
-  let quality = {
-    ...defaultQuality,
-    ...(await callOpenAIJson<Partial<QualityReport>>(QUALITY_CHECK_PROMPT, {
-      userInput,
-      extracted,
-      scene,
-      result,
-    })),
-  };
+    const scene = sceneResp.scene || "作业讲评";
 
-  if (quality.score < 80) {
-    result = {
+    let result = {
       ...defaultResult,
-      ...(await callOpenAIJson<Partial<GeneratedResult>>(REWRITE_PROMPT, {
+      ...(await callOpenAIJson<Partial<GeneratedResult>>(CONTENT_GENERATION_PROMPT, {
         userInput,
         extracted,
         scene,
-        result,
-        qualityIssues: quality.issues,
-      })),
+      }, activeProvider)),
     };
 
-    quality = {
+    let quality = {
       ...defaultQuality,
       ...(await callOpenAIJson<Partial<QualityReport>>(QUALITY_CHECK_PROMPT, {
         userInput,
         extracted,
         scene,
         result,
-      })),
+      }, activeProvider)),
+    };
+
+    if (quality.score < 80) {
+      result = {
+        ...defaultResult,
+        ...(await callOpenAIJson<Partial<GeneratedResult>>(REWRITE_PROMPT, {
+          userInput,
+          extracted,
+          scene,
+          result,
+          qualityIssues: quality.issues,
+        }, activeProvider)),
+      };
+
+      quality = {
+        ...defaultQuality,
+        ...(await callOpenAIJson<Partial<QualityReport>>(QUALITY_CHECK_PROMPT, {
+          userInput,
+          extracted,
+          scene,
+          result,
+        }, activeProvider)),
+      };
+    }
+
+    return {
+      extracted,
+      scene,
+      result,
+      quality,
+    };
+  } catch (error) {
+    const errorMessage = error instanceof Error ? error.message : "未知错误";
+    return {
+      extracted: defaultExtracted,
+      scene: "作业讲评",
+      result: {
+        lecture_outline: "模型调用失败，请检查 API Key、Base URL 或模型名称。",
+        error_analysis: "",
+        remediation: "",
+        parent_feedback: "",
+        reflection: "",
+      },
+      quality: {
+        passed: false,
+        score: 0,
+        issues: [`模型调用失败：${errorMessage}`],
+      },
     };
   }
-
-  return {
-    extracted,
-    scene,
-    result,
-    quality,
-  };
 }

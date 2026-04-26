@@ -30,6 +30,8 @@ type ApiResponse = {
   error?: string;
 };
 
+type ModelMode = "mock" | "auto" | "deepseek" | "kimi" | "openai";
+
 const loadingSteps = [
   "正在整理学生问题……",
   "正在生成讲评提纲……",
@@ -52,6 +54,7 @@ export default function HomePage() {
   const [apiData, setApiData] = useState<ApiResponse | null>(null);
   const [selectedFeedback, setSelectedFeedback] = useState<(typeof feedbackOptions)[number] | "">("");
   const [feedbackText, setFeedbackText] = useState("");
+  const [modelMode, setModelMode] = useState<ModelMode>("auto");
   const [copiedCardTitle, setCopiedCardTitle] = useState("");
   const copiedResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
@@ -101,7 +104,7 @@ export default function HomePage() {
       const res = await fetch("/api/generate", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userInput }),
+        body: JSON.stringify({ userInput, modelMode }),
       });
 
       const data = (await res.json()) as ApiResponse;
@@ -166,6 +169,24 @@ export default function HomePage() {
           rows={8}
           className="input"
         />
+
+        <label>
+          模型模式
+          <select
+            className="input"
+            value={modelMode}
+            onChange={(e) => setModelMode(e.target.value as ModelMode)}
+          >
+            <option value="mock">mock：模拟数据</option>
+            <option value="auto">auto：自动读取环境变量</option>
+            <option value="deepseek">deepseek：DeepSeek</option>
+            <option value="kimi">kimi：Kimi</option>
+            <option value="openai">openai：OpenAI</option>
+          </select>
+        </label>
+        <p className="message">
+          mock：不调用真实模型，适合演示；auto：使用 .env.local 中配置的模型；deepseek/kimi/openai：后续可按环境变量切换
+        </p>
 
         <div className="actions">
           <button type="submit" className="primary" disabled={loading}>
