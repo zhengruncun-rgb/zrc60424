@@ -48,6 +48,8 @@ export type GenerateResponse = {
   quality: QualityReport;
 };
 
+export type ModelMode = "mock" | "auto" | "deepseek" | "kimi" | "openai";
+
 const provider = process.env.AI_PROVIDER || "openai";
 const apiKey = process.env.AI_API_KEY || process.env.OPENAI_API_KEY || "";
 const baseUrl = process.env.AI_BASE_URL || "https://api.openai.com/v1";
@@ -78,7 +80,11 @@ const defaultQuality: QualityReport = {
   issues: [],
 };
 
-async function callOpenAIJson<T>(instruction: string, payload: Record<string, unknown>): Promise<T> {
+async function callOpenAIJson<T>(
+  instruction: string,
+  payload: Record<string, unknown>,
+  activeProvider: string,
+): Promise<T> {
   const requestBody: {
     model: string;
     temperature: number;
@@ -96,7 +102,7 @@ async function callOpenAIJson<T>(instruction: string, payload: Record<string, un
     ],
   };
 
-  if (provider === "openai") {
+  if (activeProvider === "openai") {
     requestBody.response_format = { type: "json_object" };
   }
 
@@ -173,21 +179,26 @@ function buildMock(userInput: string): GenerateResponse {
   };
 }
 
-export async function generateFeedback(userInput: string): Promise<GenerateResponse> {
+export async function generateFeedback(userInput: string, modelMode: ModelMode = "auto"): Promise<GenerateResponse> {
+  if (modelMode === "mock") {
+    return buildMock(userInput);
+  }
+
   if (!apiKey) {
     return buildMock(userInput);
   }
+  const activeProvider = modelMode === "auto" ? provider : modelMode;
 
   try {
     const extracted = {
       ...defaultExtracted,
-      ...(await callOpenAIJson<Partial<ExtractedInfo>>(INFO_EXTRACTION_PROMPT, { userInput })),
+      ...(await callOpenAIJson<Partial<ExtractedInfo>>(INFO_EXTRACTION_PROMPT, { userInput }, activeProvider)),
     };
 
     const sceneResp = await callOpenAIJson<{ scene?: string }>(SCENE_CLASSIFICATION_PROMPT, {
       userInput,
       extracted,
-    });
+    }, activeProvider);
 
     const scene = sceneResp.scene || "作业讲评";
 
@@ -197,7 +208,7 @@ export async function generateFeedback(userInput: string): Promise<GenerateRespo
         userInput,
         extracted,
         scene,
-      })),
+      }, activeProvider)),
     };
 
     let quality = {
@@ -207,7 +218,7 @@ export async function generateFeedback(userInput: string): Promise<GenerateRespo
         extracted,
         scene,
         result,
-      })),
+      }, activeProvider)),
     };
 
     if (quality.score < 80) {
@@ -219,7 +230,7 @@ export async function generateFeedback(userInput: string): Promise<GenerateRespo
           scene,
           result,
           qualityIssues: quality.issues,
-        })),
+        }, activeProvider)),
       };
 
       quality = {
@@ -229,7 +240,7 @@ export async function generateFeedback(userInput: string): Promise<GenerateRespo
           extracted,
           scene,
           result,
-        })),
+        }, activeProvider)),
       };
     }
 
