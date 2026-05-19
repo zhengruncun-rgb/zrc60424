@@ -1,256 +1,54 @@
-"use client";
-
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { DEFAULT_PLACEHOLDER, SAMPLE_CASES } from "@/lib/prompts";
-
-type ApiResponse = {
-  extracted: {
-    grade: string;
-    subject: string;
-    lesson_content: string;
-    main_errors: string[];
-    class_situation: string;
-    desired_outputs: string[];
-    tone: string;
-    missing_info: string[];
-  };
-  scene: string;
-  result: {
-    lecture_outline: string;
-    error_analysis: string;
-    remediation: string;
-    parent_feedback: string;
-    reflection: string;
-  };
-  quality: {
-    passed: boolean;
-    score: number;
-    issues: string[];
-  };
-  error?: string;
-};
-
-type ModelMode = "mock" | "auto" | "deepseek" | "kimi" | "openai";
-
-const loadingSteps = [
-  "正在整理学生问题……",
-  "正在生成讲评提纲……",
-  "正在检查表达是否像老师说话……",
-];
-
-const feedbackOptions = [
-  "可以直接用",
-  "改一改能用",
-  "太空了",
-  "不像老师说话",
-  "没解决我的问题",
-] as const;
-
+import Image from "next/image";
 export default function HomePage() {
-  const [userInput, setUserInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [loadingIndex, setLoadingIndex] = useState(0);
-  const [message, setMessage] = useState("");
-  const [apiData, setApiData] = useState<ApiResponse | null>(null);
-  const [selectedFeedback, setSelectedFeedback] = useState<(typeof feedbackOptions)[number] | "">("");
-  const [feedbackText, setFeedbackText] = useState("");
-  const [modelMode, setModelMode] = useState<ModelMode>("auto");
-  const [copiedCardTitle, setCopiedCardTitle] = useState("");
-  const copiedResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    if (!loading) return;
-
-    const timer = setInterval(() => {
-      setLoadingIndex((prev) => (prev + 1) % loadingSteps.length);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [loading]);
-
-
-  useEffect(() => {
-    return () => {
-      if (copiedResetTimerRef.current) {
-        clearTimeout(copiedResetTimerRef.current);
-      }
-    };
-  }, []);
-
-  const cards = useMemo(
-    () => [
-      { title: "课堂讲评提纲", value: apiData?.result.lecture_outline ?? "" },
-      { title: "共性错因分析", value: apiData?.result.error_analysis ?? "" },
-      { title: "分层补救建议", value: apiData?.result.remediation ?? "" },
-      { title: "家长反馈话术", value: apiData?.result.parent_feedback ?? "" },
-      { title: "简短课后反思", value: apiData?.result.reflection ?? "" },
-    ],
-    [apiData],
-  );
-
-  async function handleGenerate(e: FormEvent) {
-    e.preventDefault();
-    setMessage("");
-
-    if (!userInput.trim()) {
-      setMessage("请先输入课堂描述。");
-      return;
-    }
-
-    setLoading(true);
-    setLoadingIndex(0);
-
-    try {
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userInput, modelMode }),
-      });
-
-      const data = (await res.json()) as ApiResponse;
-
-      if (!res.ok || data.error) {
-        setMessage(data.error ?? "生成失败，请稍后重试。");
-        return;
-      }
-
-      setApiData(data);
-      setMessage(data.quality.passed ? "已生成，可直接复制使用。" : "已生成，建议先微调后使用。");
-    } catch {
-      setMessage("网络异常，请稍后再试。");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function copyCard(title: string, text: string) {
-    if (!text) return;
-
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedCardTitle(title);
-      setMessage("已复制到剪贴板。");
-
-      if (copiedResetTimerRef.current) {
-        clearTimeout(copiedResetTimerRef.current);
-      }
-
-      copiedResetTimerRef.current = setTimeout(() => {
-        setCopiedCardTitle("");
-      }, 1500);
-    } catch {
-      setMessage("复制失败，请手动选择复制");
-    }
-  }
-
-  function submitFeedback() {
-    const payload = {
-      selectedFeedback,
-      feedbackText,
-      timestamp: new Date().toISOString(),
-      hasResult: Boolean(apiData),
-    };
-    console.log("feedback", payload);
-    setMessage("感谢反馈，已记录（当前版本仅保存在前端日志）。");
-  }
-
   return (
-    <main className="container">
-      <header className="hero">
-        <h1>课后讲评与反馈助手</h1>
-        <p>把作业、小测后的学生问题，快速整理成讲评提纲、家长反馈和课后反思。</p>
-      </header>
-
-      <form className="panel" onSubmit={handleGenerate}>
-        <textarea
-          value={userInput}
-          onChange={(e) => setUserInput(e.target.value)}
-          placeholder={DEFAULT_PLACEHOLDER}
-          rows={8}
-          className="input"
-        />
-
-        <label>
-          模型模式
-          <select
-            className="input"
-            value={modelMode}
-            onChange={(e) => setModelMode(e.target.value as ModelMode)}
-          >
-            <option value="mock">mock：模拟数据</option>
-            <option value="auto">auto：自动读取环境变量</option>
-            <option value="deepseek">deepseek：DeepSeek</option>
-            <option value="kimi">kimi：Kimi</option>
-            <option value="openai">openai：OpenAI</option>
-          </select>
-        </label>
-        <p className="message">
-          mock：不调用真实模型，适合演示；auto：使用 .env.local 中配置的模型；deepseek/kimi/openai：后续可按环境变量切换
-        </p>
-
-        <div className="actions">
-          <button type="submit" className="primary" disabled={loading}>
-            {loading ? loadingSteps[loadingIndex] : "生成讲评与反馈"}
-          </button>
-
-          <div className="sampleRow">
-            {SAMPLE_CASES.map((item) => (
-              <button
-                key={item.label}
-                type="button"
-                className="sampleBtn"
-                onClick={() => setUserInput(item.text)}
-              >
-                {item.label}
-              </button>
-            ))}
+    <main className="home">
+      <section className="hero">
+        <div className="heroText">
+          <p className="badge">Personal Brand Website</p>
+          <h1>务实做事，把教育场景里的复杂问题做成简单方案。</h1>
+          <p className="lead">
+            我专注中小学教育场景，提供内容提效、品牌展示与 AI 工具落地服务。
+            不讲空话，只交付能上线、能使用、能推进结果的页面与流程。
+          </p>
+          <div className="heroActions">
+            <a href="#contact" className="btnPrimary">联系我</a>
+            <a href="#services" className="btnGhost">查看服务</a>
           </div>
         </div>
-      </form>
 
-      <section className="grid">
-        {cards.map((card) => (
-          <article className="card" key={card.title}>
-            <div className="cardHead">
-              <h2>{card.title}</h2>
-              <button type="button" className="copyBtn" onClick={() => copyCard(card.title, card.value)}>
-                {copiedCardTitle === card.title ? "已复制" : "复制"}
-              </button>
-            </div>
-            <pre>{card.value || "点击“生成讲评与反馈”后显示内容。"}</pre>
-          </article>
-        ))}
-      </section>
-
-      <section className="feedback">
-        <h3>问题：这份内容你觉得能用吗？</h3>
-        <div className="feedbackOptions">
-          {feedbackOptions.map((option) => (
-            <button
-              key={option}
-              type="button"
-              className={option === selectedFeedback ? "option active" : "option"}
-              onClick={() => setSelectedFeedback(option)}
-            >
-              {option}
-            </button>
-          ))}
+        <div className="heroPhotoWrap" aria-label="个人主页照片">
+          <div className="photoAura" />
+          <Image src="/profile-photo.jpg" alt="个人主页照片" className="heroPhoto" width={840} height={1120} priority />
+          <p className="photoHint">艺术处理：胶片质感 + 冷暖分离 + 柔光边框</p>
         </div>
-
-        <textarea
-          className="input"
-          rows={3}
-          value={feedbackText}
-          onChange={(e) => setFeedbackText(e.target.value)}
-          placeholder="哪句话你觉得不像老师说的？可以直接写在这里。"
-        />
-
-        <button type="button" className="feedbackSubmit" onClick={submitFeedback}>
-          提交反馈
-        </button>
       </section>
 
-      <footer>{message ? <p className="message">{message}</p> : null}</footer>
+      <section id="services" className="section">
+        <h2>服务方向</h2>
+        <div className="cards">
+          <article>
+            <h3>内容生产提效</h3>
+            <p>把选题、脚本、生成、复用变成固定流程，减少重复劳动。</p>
+          </article>
+          <article>
+            <h3>个人品牌官网</h3>
+            <p>一屏讲清价值主张、服务边界与联系入口，提升信任和转化。</p>
+          </article>
+          <article>
+            <h3>AI 落地顾问</h3>
+            <p>结合真实业务场景做轻量接入，不堆概念，先做能用的版本。</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="contact" className="section contact">
+        <h2>合作方式</h2>
+        <p>微信优先。你给出真实场景，我给出可执行方案和落地路径。</p>
+        <div className="contactActions">
+          <button type="button">复制微信号</button>
+          <button type="button">发送合作需求</button>
+        </div>
+      </section>
     </main>
   );
 }
