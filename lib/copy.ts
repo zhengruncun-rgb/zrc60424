@@ -1,20 +1,20 @@
 export const HERO_COPY = {
-  title: "把老师最烦的重复工作，做成能直接用的小工具。",
+  title: "很多老师不是不会教，\n是被重复工作拖垮了。",
   subtitle:
-    "聚焦真实教学场景：作业讲评、能力卡点诊断、家校沟通。先用小工具验证，再做可复制方案。",
-  tags: ["作业讲评提效", "能力卡点诊断", "家校沟通辅助"],
-  ctaPrimary: "30 秒判断：你最该先做哪一步",
-  ctaSecondary: "先看「作业讲评 3 步诊断」",
-  ctaTertiary: "我先随便看看",
-  trustLine: "先解决一个真问题，再扩展功能。",
+    "30年教育一线经验。我不卖空泛AI概念，只专门解决老师真实工作里的重复劳动：作业讲评、能力卡点诊断、家校沟通、班主任高频文案。",
+  tags: ["作业讲评提效", "能力卡点诊断", "班主任高频文案", "家校沟通辅助"],
+  ctaPrimary: "先体验：作业讲评助手",
+  ctaSecondary: "看看老师最常见的低效工作",
+  ctaTertiary: "直接和我聊",
+  trustLine: "先解决一个真实问题，再谈AI和效率。",
 } as const;
 
 export const HERO_COPY_MOBILE = {
-  title: "把老师重复工作做成可直接用的工具。",
-  subtitle: "聚焦讲评、卡点诊断、家校沟通，先快用起来。",
-  ctaPrimary: "开始 30 秒判断",
-  ctaSecondary: "先看 3 步诊断",
-  ctaTertiary: "先看看",
+  title: "老师最累的不是上课，而是重复劳动。",
+  subtitle: "聚焦讲评、卡点诊断、家校沟通，先做真正能直接用的工具。",
+  ctaPrimary: "先体验工具",
+  ctaSecondary: "看老师痛点",
+  ctaTertiary: "直接联系",
 } as const;
 
 export const FORM_COPY = {
