@@ -8,19 +8,26 @@ const tools = [
   {
     title: "智能作业分层助手",
     desc: "根据班级学情自动生成基础、提高、拓展三层作业。",
-    image: "/work-layer.svg",
+    icon: "分",
+    tags: ["分层作业", "学情输入", "一键生成"],
   },
   {
     title: "教师AI素养测评",
     desc: "从基础知识、教学应用、伦理安全、实操能力四个维度评估教师AI能力。",
+    icon: "测",
+    tags: ["AI素养", "四维测评", "提升建议"],
   },
   {
     title: "语文名师课堂设计助手",
     desc: "围绕新课标、主问题和学习任务，快速生成课堂设计方案。",
+    icon: "课",
+    tags: ["新课标", "主问题", "学习任务"],
   },
   {
     title: "课后讲评与反馈助手",
     desc: "把学生问题整理成讲评提纲、家长反馈和课后反思。",
+    icon: "评",
+    tags: ["讲评提纲", "家长反馈", "课后反思"],
   },
 ];
 
@@ -86,13 +93,9 @@ export default function HomePage() {
         </div>
 
         <aside className="profilePanel">
-          <div className="photoCard">
-            <img src="/profile-photo.svg" alt="村长个人照片" />
-          </div>
-          <div className="profileInfo">
-            <strong>村长</strong>
-            <span>老师减负工具设计者</span>
-          </div>
+          <div className="profileBadge">村长</div>
+          <div className="profileTitle">老师减负工具设计者</div>
+          <p className="profileDesc">做了30年教育，最想解决的不是炫技问题，而是老师每天都绕不开的重复劳动。</p>
           <div className="statGrid">
             <div><b>30年</b><span>教育一线经验</span></div>
             <div><b>4类</b><span>真实工具方向</span></div>
@@ -125,13 +128,20 @@ export default function HomePage() {
         <div className="workGrid">
           {tools.map((tool, index) => (
             <article className="workCard" key={tool.title}>
-              <div className="workPreview">
-                {tool.image ? <img src={tool.image} alt={tool.title} /> : <div className="mockPreview">{tool.title}</div>}
+              <div className="workPreview mockPreview">
+                <div className="workIcon">{tool.icon}</div>
+                <div>
+                  <strong>{tool.title}</strong>
+                  <p>{tool.desc}</p>
+                </div>
               </div>
               <div className="workText">
                 <span>作品 0{index + 1}</span>
                 <h3>{tool.title}</h3>
                 <p>{tool.desc}</p>
+                <div className="miniTags">
+                  {tool.tags.map((tag) => <em key={tag}>{tag}</em>)}
+                </div>
                 <button type="button" onClick={() => setShowWechat(true)}>想体验这个</button>
               </div>
             </article>
