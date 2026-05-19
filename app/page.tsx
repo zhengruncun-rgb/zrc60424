@@ -48,113 +48,6 @@ const feedbackOptions = [
 ] as const;
 
 export default function HomePage() {
-  const [userInput, setUserInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [loadingIndex, setLoadingIndex] = useState(0);
-  const [message, setMessage] = useState("");
-  const [apiData, setApiData] = useState<ApiResponse | null>(null);
-  const [selectedFeedback, setSelectedFeedback] = useState<(typeof feedbackOptions)[number] | "">("");
-  const [feedbackText, setFeedbackText] = useState("");
-  const [modelMode, setModelMode] = useState<ModelMode>("auto");
-  const [copiedCardTitle, setCopiedCardTitle] = useState("");
-  const copiedResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-
-  useEffect(() => {
-    if (!loading) return;
-
-    const timer = setInterval(() => {
-      setLoadingIndex((prev) => (prev + 1) % loadingSteps.length);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [loading]);
-
-
-  useEffect(() => {
-    return () => {
-      if (copiedResetTimerRef.current) {
-        clearTimeout(copiedResetTimerRef.current);
-      }
-    };
-  }, []);
-
-  const cards = useMemo(
-    () => [
-      { title: "课堂讲评提纲", value: apiData?.result.lecture_outline ?? "" },
-      { title: "共性错因分析", value: apiData?.result.error_analysis ?? "" },
-      { title: "分层补救建议", value: apiData?.result.remediation ?? "" },
-      { title: "家长反馈话术", value: apiData?.result.parent_feedback ?? "" },
-      { title: "简短课后反思", value: apiData?.result.reflection ?? "" },
-    ],
-    [apiData],
-  );
-
-  async function handleGenerate(e: FormEvent) {
-    e.preventDefault();
-    setMessage("");
-
-    if (!userInput.trim()) {
-      setMessage("请先输入课堂描述。");
-      return;
-    }
-
-    setLoading(true);
-    setLoadingIndex(0);
-
-    try {
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userInput, modelMode }),
-      });
-
-      const data = (await res.json()) as ApiResponse;
-
-      if (!res.ok || data.error) {
-        setMessage(data.error ?? "生成失败，请稍后重试。");
-        return;
-      }
-
-      setApiData(data);
-      setMessage(data.quality.passed ? "已生成，可直接复制使用。" : "已生成，建议先微调后使用。");
-    } catch {
-      setMessage("网络异常，请稍后再试。");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function copyCard(title: string, text: string) {
-    if (!text) return;
-
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedCardTitle(title);
-      setMessage("已复制到剪贴板。");
-
-      if (copiedResetTimerRef.current) {
-        clearTimeout(copiedResetTimerRef.current);
-      }
-
-      copiedResetTimerRef.current = setTimeout(() => {
-        setCopiedCardTitle("");
-      }, 1500);
-    } catch {
-      setMessage("复制失败，请手动选择复制");
-    }
-  }
-
-  function submitFeedback() {
-    const payload = {
-      selectedFeedback,
-      feedbackText,
-      timestamp: new Date().toISOString(),
-      hasResult: Boolean(apiData),
-    };
-    console.log("feedback", payload);
-    setMessage("感谢反馈，已记录（当前版本仅保存在前端日志）。");
-  }
-
   return (
     <main className="container">
       <header className="hero">
@@ -217,51 +110,40 @@ export default function HomePage() {
             <button type="button" className="heroLinkBtn">{HERO_COPY.ctaTertiary}</button>
           </div>
         </div>
-      </form>
 
-      <section className="grid">
-        {cards.map((card) => (
-          <article className="card" key={card.title}>
-            <div className="cardHead">
-              <h2>{card.title}</h2>
-              <button type="button" className="copyBtn" onClick={() => copyCard(card.title, card.value)}>
-                {copiedCardTitle === card.title ? "已复制" : "复制"}
-              </button>
-            </div>
-            <pre>{card.value || "点击“生成讲评与反馈”后显示内容。"}</pre>
-          </article>
-        ))}
-      </section>
-
-      <section className="feedback">
-        <h3>问题：这份内容你觉得能用吗？</h3>
-        <div className="feedbackOptions">
-          {feedbackOptions.map((option) => (
-            <button
-              key={option}
-              type="button"
-              className={option === selectedFeedback ? "option active" : "option"}
-              onClick={() => setSelectedFeedback(option)}
-            >
-              {option}
-            </button>
-          ))}
+        <div className="heroPhotoWrap" aria-label="个人主页照片">
+          <div className="photoAura" />
+          <Image src="/profile-photo.jpg" alt="个人主页照片" className="heroPhoto" width={840} height={1120} priority />
+          <p className="photoHint">艺术处理：胶片质感 + 冷暖分离 + 柔光边框</p>
         </div>
-
-        <textarea
-          className="input"
-          rows={3}
-          value={feedbackText}
-          onChange={(e) => setFeedbackText(e.target.value)}
-          placeholder="哪句话你觉得不像老师说的？可以直接写在这里。"
-        />
-
-        <button type="button" className="feedbackSubmit" onClick={submitFeedback}>
-          提交反馈
-        </button>
       </section>
 
-      <footer>{message ? <p className="message">{message}</p> : null}</footer>
+      <section id="services" className="section">
+        <h2>服务方向</h2>
+        <div className="cards">
+          <article>
+            <h3>内容生产提效</h3>
+            <p>把选题、脚本、生成、复用变成固定流程，减少重复劳动。</p>
+          </article>
+          <article>
+            <h3>个人品牌官网</h3>
+            <p>一屏讲清价值主张、服务边界与联系入口，提升信任和转化。</p>
+          </article>
+          <article>
+            <h3>AI 落地顾问</h3>
+            <p>结合真实业务场景做轻量接入，不堆概念，先做能用的版本。</p>
+          </article>
+        </div>
+      </section>
+
+      <section id="contact" className="section contact">
+        <h2>合作方式</h2>
+        <p>微信优先。你给出真实场景，我给出可执行方案和落地路径。</p>
+        <div className="contactActions">
+          <button type="button">复制微信号</button>
+          <button type="button">发送合作需求</button>
+        </div>
+      </section>
     </main>
   );
 }
