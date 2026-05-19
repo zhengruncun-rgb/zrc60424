@@ -1,120 +1,35 @@
-"use client";
-
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { DEFAULT_PLACEHOLDER, SAMPLE_CASES } from "@/lib/prompts";
-import { FORM_COPY, HERO_COPY } from "@/lib/copy";
-
-type ApiResponse = {
-  extracted: {
-    grade: string;
-    subject: string;
-    lesson_content: string;
-    main_errors: string[];
-    class_situation: string;
-    desired_outputs: string[];
-    tone: string;
-    missing_info: string[];
-  };
-  scene: string;
-  result: {
-    lecture_outline: string;
-    error_analysis: string;
-    remediation: string;
-    parent_feedback: string;
-    reflection: string;
-  };
-  quality: {
-    passed: boolean;
-    score: number;
-    issues: string[];
-  };
-  error?: string;
-};
-
-type ModelMode = "mock" | "auto" | "deepseek" | "kimi" | "openai";
-
-const loadingSteps = [
-  "正在整理学生问题……",
-  "正在生成讲评提纲……",
-  "正在检查表达是否像老师说话……",
-];
-
-const feedbackOptions = [
-  "可以直接用",
-  "改一改能用",
-  "太空了",
-  "不像老师说话",
-  "没解决我的问题",
-] as const;
+import { HERO_COPY } from "@/lib/copy";
 
 export default function HomePage() {
   return (
-    <main className="container">
-      <header className="hero">
-        <h1>{HERO_COPY.title}</h1>
-        <p>{HERO_COPY.subtitle}</p>
-        <ul className="heroTags">
-          {HERO_COPY.tags.map((tag) => (
-            <li key={tag}>{tag}</li>
-          ))}
-        </ul>
-        <p className="heroTrust">{HERO_COPY.trustLine}</p>
-      </header>
+    <main className="home">
+      <section className="hero">
+        <div>
+          <p className="badge">Personal Brand Website</p>
+          <h1>{HERO_COPY.title}</h1>
+          <p className="lead">{HERO_COPY.subtitle}</p>
 
-      <form className="panel" onSubmit={handleGenerate}>
-        <textarea
-          value={userInput}
-          onChange={(e) => setUserInput(e.target.value)}
-          placeholder={DEFAULT_PLACEHOLDER}
-          rows={8}
-          className="input"
-        />
-
-        <label>
-          模型模式
-          <select
-            className="input"
-            value={modelMode}
-            onChange={(e) => setModelMode(e.target.value as ModelMode)}
-          >
-            <option value="mock">mock：模拟数据</option>
-            <option value="auto">auto：自动读取环境变量</option>
-            <option value="deepseek">deepseek：DeepSeek</option>
-            <option value="kimi">kimi：Kimi</option>
-            <option value="openai">openai：OpenAI</option>
-          </select>
-        </label>
-        <p className="message">
-          mock：不调用真实模型，适合演示；auto：使用 .env.local 中配置的模型；deepseek/kimi/openai：后续可按环境变量切换
-        </p>
-
-        <div className="actions">
-          <button type="submit" className="primary" disabled={loading}>
-            {loading ? loadingSteps[loadingIndex] : FORM_COPY.submitLabel}
-          </button>
-
-          <div className="sampleRow">
-            {SAMPLE_CASES.map((item) => (
-              <button
-                key={item.label}
-                type="button"
-                className="sampleBtn"
-                onClick={() => setUserInput(item.text)}
-              >
-                {item.label}
-              </button>
+          <ul className="heroTags">
+            {HERO_COPY.tags.map((tag) => (
+              <li key={tag}>{tag}</li>
             ))}
+          </ul>
+          <p className="heroTrust">{HERO_COPY.trustLine}</p>
+
+          <div className="heroActions">
+            <a className="btnPrimary" href="#contact">{HERO_COPY.ctaPrimary}</a>
+            <a className="btnGhost" href="#services">查看服务方向</a>
           </div>
           <div className="heroCtaRow">
-            <button type="button" className="heroLinkBtn">{HERO_COPY.ctaSecondary}</button>
-            <button type="button" className="heroLinkBtn">{HERO_COPY.ctaTertiary}</button>
+            <a className="heroLinkBtn" href="#services">{HERO_COPY.ctaSecondary}</a>
+            <a className="heroLinkBtn" href="#contact">{HERO_COPY.ctaTertiary}</a>
           </div>
         </div>
 
-        <div className="heroPhotoWrap" aria-label="个人主页照片">
+        <div className="heroPhotoWrap" aria-label="个人主页视觉区域">
           <div className="photoAura" />
-          <Image src="/profile-photo.jpg" alt="个人主页照片" className="heroPhoto" width={840} height={1120} priority />
-          <p className="photoHint">艺术处理：胶片质感 + 冷暖分离 + 柔光边框</p>
+          <div className="heroPhoto" aria-hidden="true" />
+          <p className="photoHint">这里后续可以替换为你的个人照片或品牌主视觉。</p>
         </div>
       </section>
 
@@ -122,16 +37,16 @@ export default function HomePage() {
         <h2>服务方向</h2>
         <div className="cards">
           <article>
-            <h3>内容生产提效</h3>
-            <p>把选题、脚本、生成、复用变成固定流程，减少重复劳动。</p>
+            <h3>教师效率工具</h3>
+            <p>围绕作业讲评、能力卡点诊断、家校沟通，把高频重复工作做成能直接用的小工具。</p>
           </article>
           <article>
             <h3>个人品牌官网</h3>
-            <p>一屏讲清价值主张、服务边界与联系入口，提升信任和转化。</p>
+            <p>一屏讲清价值主张、服务边界与联系入口，让别人快速知道你是谁、能解决什么问题。</p>
           </article>
           <article>
             <h3>AI 落地顾问</h3>
-            <p>结合真实业务场景做轻量接入，不堆概念，先做能用的版本。</p>
+            <p>结合真实业务场景做轻量接入，不堆概念，先做能用、能验证、能迭代的版本。</p>
           </article>
         </div>
       </section>
