@@ -1,18 +1,113 @@
-import Image from "next/image";
+"use client";
+
+import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { DEFAULT_PLACEHOLDER, SAMPLE_CASES } from "@/lib/prompts";
+import { FORM_COPY, HERO_COPY } from "@/lib/copy";
+
+type ApiResponse = {
+  extracted: {
+    grade: string;
+    subject: string;
+    lesson_content: string;
+    main_errors: string[];
+    class_situation: string;
+    desired_outputs: string[];
+    tone: string;
+    missing_info: string[];
+  };
+  scene: string;
+  result: {
+    lecture_outline: string;
+    error_analysis: string;
+    remediation: string;
+    parent_feedback: string;
+    reflection: string;
+  };
+  quality: {
+    passed: boolean;
+    score: number;
+    issues: string[];
+  };
+  error?: string;
+};
+
+type ModelMode = "mock" | "auto" | "deepseek" | "kimi" | "openai";
+
+const loadingSteps = [
+  "正在整理学生问题……",
+  "正在生成讲评提纲……",
+  "正在检查表达是否像老师说话……",
+];
+
+const feedbackOptions = [
+  "可以直接用",
+  "改一改能用",
+  "太空了",
+  "不像老师说话",
+  "没解决我的问题",
+] as const;
+
 export default function HomePage() {
   return (
-    <main className="home">
-      <section className="hero">
-        <div className="heroText">
-          <p className="badge">Personal Brand Website</p>
-          <h1>务实做事，把教育场景里的复杂问题做成简单方案。</h1>
-          <p className="lead">
-            我专注中小学教育场景，提供内容提效、品牌展示与 AI 工具落地服务。
-            不讲空话，只交付能上线、能使用、能推进结果的页面与流程。
-          </p>
-          <div className="heroActions">
-            <a href="#contact" className="btnPrimary">联系我</a>
-            <a href="#services" className="btnGhost">查看服务</a>
+    <main className="container">
+      <header className="hero">
+        <h1>{HERO_COPY.title}</h1>
+        <p>{HERO_COPY.subtitle}</p>
+        <ul className="heroTags">
+          {HERO_COPY.tags.map((tag) => (
+            <li key={tag}>{tag}</li>
+          ))}
+        </ul>
+        <p className="heroTrust">{HERO_COPY.trustLine}</p>
+      </header>
+
+      <form className="panel" onSubmit={handleGenerate}>
+        <textarea
+          value={userInput}
+          onChange={(e) => setUserInput(e.target.value)}
+          placeholder={DEFAULT_PLACEHOLDER}
+          rows={8}
+          className="input"
+        />
+
+        <label>
+          模型模式
+          <select
+            className="input"
+            value={modelMode}
+            onChange={(e) => setModelMode(e.target.value as ModelMode)}
+          >
+            <option value="mock">mock：模拟数据</option>
+            <option value="auto">auto：自动读取环境变量</option>
+            <option value="deepseek">deepseek：DeepSeek</option>
+            <option value="kimi">kimi：Kimi</option>
+            <option value="openai">openai：OpenAI</option>
+          </select>
+        </label>
+        <p className="message">
+          mock：不调用真实模型，适合演示；auto：使用 .env.local 中配置的模型；deepseek/kimi/openai：后续可按环境变量切换
+        </p>
+
+        <div className="actions">
+          <button type="submit" className="primary" disabled={loading}>
+            {loading ? loadingSteps[loadingIndex] : FORM_COPY.submitLabel}
+          </button>
+
+          <div className="sampleRow">
+            {SAMPLE_CASES.map((item) => (
+              <button
+                key={item.label}
+                type="button"
+                className="sampleBtn"
+                onClick={() => setUserInput(item.text)}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+          <div className="heroCtaRow">
+            <button type="button" className="heroLinkBtn">{HERO_COPY.ctaSecondary}</button>
+            <button type="button" className="heroLinkBtn">{HERO_COPY.ctaTertiary}</button>
           </div>
         </div>
 
