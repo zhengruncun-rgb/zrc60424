@@ -2,6 +2,7 @@
 
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { DEFAULT_PLACEHOLDER, SAMPLE_CASES } from "@/lib/prompts";
+import { FORM_COPY, HERO_COPY } from "@/lib/copy";
 
 type ApiResponse = {
   extracted: {
@@ -157,8 +158,14 @@ export default function HomePage() {
   return (
     <main className="container">
       <header className="hero">
-        <h1>课后讲评与反馈助手</h1>
-        <p>把作业、小测后的学生问题，快速整理成讲评提纲、家长反馈和课后反思。</p>
+        <h1>{HERO_COPY.title}</h1>
+        <p>{HERO_COPY.subtitle}</p>
+        <ul className="heroTags">
+          {HERO_COPY.tags.map((tag) => (
+            <li key={tag}>{tag}</li>
+          ))}
+        </ul>
+        <p className="heroTrust">{HERO_COPY.trustLine}</p>
       </header>
 
       <form className="panel" onSubmit={handleGenerate}>
@@ -190,7 +197,7 @@ export default function HomePage() {
 
         <div className="actions">
           <button type="submit" className="primary" disabled={loading}>
-            {loading ? loadingSteps[loadingIndex] : "生成讲评与反馈"}
+            {loading ? loadingSteps[loadingIndex] : FORM_COPY.submitLabel}
           </button>
 
           <div className="sampleRow">
@@ -204,6 +211,10 @@ export default function HomePage() {
                 {item.label}
               </button>
             ))}
+          </div>
+          <div className="heroCtaRow">
+            <button type="button" className="heroLinkBtn">{HERO_COPY.ctaSecondary}</button>
+            <button type="button" className="heroLinkBtn">{HERO_COPY.ctaTertiary}</button>
           </div>
         </div>
       </form>
