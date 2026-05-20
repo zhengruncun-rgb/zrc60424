@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 const WECHAT_ID = "zrc131331";
+const PROFILE_PHOTO = "/微信图片_20260519005623_54_51.jpg";
 
 const works = [
   ["智能作业分层助手", "按班级学情生成基础、提高、拓展三层作业。", "分层作业"],
@@ -55,7 +56,7 @@ export default function HomePage() {
         </div>
 
         <aside className="personCard photoPersonCard">
-          <div className="portraitPhoto"><img src="/profile-photo.svg" alt="村长个人照片" /></div>
+          <div className="portraitPhoto"><img src={PROFILE_PHOTO} alt="村长个人照片" /></div>
           <div className="personText">
             <p className="personName">村长</p>
             <h2>教师AI工具设计者</h2>
