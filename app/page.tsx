@@ -12,9 +12,9 @@ const works = [
 ];
 
 const services = [
-  ["效率工具", "把作业讲评、家校沟通、文案整理等重复工作做成小工具。"],
-  ["AI讲堂", "不讲空泛概念，只讲老师能马上用起来的AI方法。"],
-  ["减负工具", "围绕真实教学场景，减少老师低效、重复、耗时的工作。"],
+  ["效率工具", "把老师每天重复写、重复改、重复整理的工作，做成能直接用的小工具。"],
+  ["AI讲堂", "不教复杂概念，只教老师在备课、讲评、沟通中真正用得上的AI方法。"],
+  ["减负工具", "围绕作业反馈、家校沟通、班主任文案、学情分析，减少低效劳动。"],
 ];
 
 export default function HomePage() {
@@ -54,10 +54,13 @@ export default function HomePage() {
           <div className="actions"><a href="#works" className="primary">看真实作品</a><button className="ghost" onClick={() => setWechatOpen(true)}>联系我</button><button className="plain" onClick={() => setDemandOpen(true)}>合作需求</button></div>
         </div>
 
-        <aside className="personCard">
-          <div className="portraitMark">村长</div>
-          <h2>教师AI工具设计者</h2>
-          <p>做了30年教育，最想解决的不是炫技问题，而是老师每天都绕不开的重复劳动。</p>
+        <aside className="personCard photoPersonCard">
+          <div className="portraitPhoto"><img src="/profile-photo.svg" alt="村长个人照片" /></div>
+          <div className="personText">
+            <p className="personName">村长</p>
+            <h2>教师AI工具设计者</h2>
+            <p>做了30年教育，最想解决的不是炫技问题，而是老师每天都绕不开的重复劳动。</p>
+          </div>
           <div className="facts"><div><b>30年</b><span>教育一线经验</span></div><div><b>4类</b><span>工具方向</span></div><div><b>1件事</b><span>先解决真问题</span></div></div>
         </aside>
       </section>
@@ -69,10 +72,10 @@ export default function HomePage() {
 
       <section id="works" className="block">
         <p className="sectionKicker">WORKS</p><h2>已落地作品</h2><p className="sub">不是概念展示，都是围绕老师真实工作场景做出来的小工具。</p>
-        <div className="workGrid">{works.map(([title, text, label], i) => <article className="work" key={title}><div className="screen"><span>{label}</span><strong>{title}</strong><small>真实产品方向 0{i + 1}</small></div><div className="workBody"><h3>{title}</h3><p>{text}</p><button onClick={() => setWechatOpen(true)}>想体验这个</button></div></article>)}</div>
+        <div className="workGrid">{works.map(([title, text, label], i) => <article className="work" key={title}><div className="screen"><span>{label}</span><strong>{title}</strong><small>真实产品方向 0{i + 1}</small></div><div className="workBody"><h3>{title}</h3><p>{text}</p><button onClick={() => setWechatOpen(true)}>查看介绍</button></div></article>)}</div>
       </section>
 
-      <section id="why" className="why"><div><p className="sectionKicker">WHY</p><h2>为什么做这些工具？</h2></div><p>做了30年教育，我发现很多老师不是不会教，而是被重复劳动拖垮了。真正消耗老师的，往往是反复讲评、整理反馈、家校沟通和大量低效文案。所以我开始把这些高频工作，做成真正能直接使用的小工具。</p></section>
+      <section id="why" className="why"><div><p className="sectionKicker">WHY</p><h2>为什么做这些工具？</h2></div><p>很多老师不是不会教，而是被重复劳动拖垮了。真正消耗老师的，往往不是课堂本身，而是反复讲评、整理反馈、家校沟通和大量低效文案。所以我开始把这些高频工作，做成真正能直接使用的小工具。</p></section>
 
       <section className="contact"><div><p className="sectionKicker">CONTACT</p><h2>有具体问题，可以直接找我。</h2><p>你给出真实场景，我给出可执行方案和落地路径。</p></div><div className="contactBtns"><button onClick={() => setWechatOpen(true)}>联系我</button><button onClick={() => setDemandOpen(true)}>合作需求</button></div></section>
       <footer>村长教师AI实验室 · 聚焦教师真实工作场景</footer>
