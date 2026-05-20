@@ -1,256 +1,91 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
-import { DEFAULT_PLACEHOLDER, SAMPLE_CASES } from "@/lib/prompts";
+import Image from "next/image";
+import { ChangeEvent, useState } from "react";
 
-type ApiResponse = {
-  extracted: {
-    grade: string;
-    subject: string;
-    lesson_content: string;
-    main_errors: string[];
-    class_situation: string;
-    desired_outputs: string[];
-    tone: string;
-    missing_info: string[];
-  };
-  scene: string;
-  result: {
-    lecture_outline: string;
-    error_analysis: string;
-    remediation: string;
-    parent_feedback: string;
-    reflection: string;
-  };
-  quality: {
-    passed: boolean;
-    score: number;
-    issues: string[];
-  };
-  error?: string;
-};
-
-type ModelMode = "mock" | "auto" | "deepseek" | "kimi" | "openai";
-
-const loadingSteps = [
-  "正在整理学生问题……",
-  "正在生成讲评提纲……",
-  "正在检查表达是否像老师说话……",
+const serviceCards = [
+  {
+    title: "效率工具",
+    text: "把老师每天重复写、重复改、重复整理的工作，做成能直接用的小工具。",
+  },
+  {
+    title: "AI讲堂",
+    text: "不教复杂概念，只教老师在备课、讲评、沟通中真正用得上的 AI 方法。",
+  },
+  {
+    title: "减负工具",
+    text: "围绕作业反馈、家校沟通、班主任文案、学情分析，减少低效劳动。",
+  },
 ];
 
-const feedbackOptions = [
-  "可以直接用",
-  "改一改能用",
-  "太空了",
-  "不像老师说话",
-  "没解决我的问题",
-] as const;
-
 export default function HomePage() {
-  const [userInput, setUserInput] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [loadingIndex, setLoadingIndex] = useState(0);
-  const [message, setMessage] = useState("");
-  const [apiData, setApiData] = useState<ApiResponse | null>(null);
-  const [selectedFeedback, setSelectedFeedback] = useState<(typeof feedbackOptions)[number] | "">("");
-  const [feedbackText, setFeedbackText] = useState("");
-  const [modelMode, setModelMode] = useState<ModelMode>("auto");
-  const [copiedCardTitle, setCopiedCardTitle] = useState("");
-  const copiedResetTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [photoSrc, setPhotoSrc] = useState("/profile-photo.jpg");
 
-  useEffect(() => {
-    if (!loading) return;
-
-    const timer = setInterval(() => {
-      setLoadingIndex((prev) => (prev + 1) % loadingSteps.length);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [loading]);
-
-
-  useEffect(() => {
-    return () => {
-      if (copiedResetTimerRef.current) {
-        clearTimeout(copiedResetTimerRef.current);
-      }
-    };
-  }, []);
-
-  const cards = useMemo(
-    () => [
-      { title: "课堂讲评提纲", value: apiData?.result.lecture_outline ?? "" },
-      { title: "共性错因分析", value: apiData?.result.error_analysis ?? "" },
-      { title: "分层补救建议", value: apiData?.result.remediation ?? "" },
-      { title: "家长反馈话术", value: apiData?.result.parent_feedback ?? "" },
-      { title: "简短课后反思", value: apiData?.result.reflection ?? "" },
-    ],
-    [apiData],
-  );
-
-  async function handleGenerate(e: FormEvent) {
-    e.preventDefault();
-    setMessage("");
-
-    if (!userInput.trim()) {
-      setMessage("请先输入课堂描述。");
-      return;
-    }
-
-    setLoading(true);
-    setLoadingIndex(0);
-
-    try {
-      const res = await fetch("/api/generate", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ userInput, modelMode }),
-      });
-
-      const data = (await res.json()) as ApiResponse;
-
-      if (!res.ok || data.error) {
-        setMessage(data.error ?? "生成失败，请稍后重试。");
-        return;
-      }
-
-      setApiData(data);
-      setMessage(data.quality.passed ? "已生成，可直接复制使用。" : "已生成，建议先微调后使用。");
-    } catch {
-      setMessage("网络异常，请稍后再试。");
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  async function copyCard(title: string, text: string) {
-    if (!text) return;
-
-    try {
-      await navigator.clipboard.writeText(text);
-      setCopiedCardTitle(title);
-      setMessage("已复制到剪贴板。");
-
-      if (copiedResetTimerRef.current) {
-        clearTimeout(copiedResetTimerRef.current);
-      }
-
-      copiedResetTimerRef.current = setTimeout(() => {
-        setCopiedCardTitle("");
-      }, 1500);
-    } catch {
-      setMessage("复制失败，请手动选择复制");
-    }
-  }
-
-  function submitFeedback() {
-    const payload = {
-      selectedFeedback,
-      feedbackText,
-      timestamp: new Date().toISOString(),
-      hasResult: Boolean(apiData),
-    };
-    console.log("feedback", payload);
-    setMessage("感谢反馈，已记录（当前版本仅保存在前端日志）。");
+  function onPickPhoto(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+    if (!file) return;
+    setPhotoSrc(URL.createObjectURL(file));
   }
 
   return (
-    <main className="container">
-      <header className="hero">
-        <h1>课后讲评与反馈助手</h1>
-        <p>把作业、小测后的学生问题，快速整理成讲评提纲、家长反馈和课后反思。</p>
-      </header>
+    <main className="page">
+      <section className="topNav">
+        <strong>村长教师AI实验室</strong>
+        <button type="button">联系我</button>
+      </section>
 
-      <form className="panel" onSubmit={handleGenerate}>
-        <textarea
-          value={userInput}
-          onChange={(e) => setUserInput(e.target.value)}
-          placeholder={DEFAULT_PLACEHOLDER}
-          rows={8}
-          className="input"
-        />
-
-        <label>
-          模型模式
-          <select
-            className="input"
-            value={modelMode}
-            onChange={(e) => setModelMode(e.target.value as ModelMode)}
-          >
-            <option value="mock">mock：模拟数据</option>
-            <option value="auto">auto：自动读取环境变量</option>
-            <option value="deepseek">deepseek：DeepSeek</option>
-            <option value="kimi">kimi：Kimi</option>
-            <option value="openai">openai：OpenAI</option>
-          </select>
-        </label>
-        <p className="message">
-          mock：不调用真实模型，适合演示；auto：使用 .env.local 中配置的模型；deepseek/kimi/openai：后续可按环境变量切换
-        </p>
-
-        <div className="actions">
-          <button type="submit" className="primary" disabled={loading}>
-            {loading ? loadingSteps[loadingIndex] : "生成讲评与反馈"}
-          </button>
-
-          <div className="sampleRow">
-            {SAMPLE_CASES.map((item) => (
-              <button
-                key={item.label}
-                type="button"
-                className="sampleBtn"
-                onClick={() => setUserInput(item.text)}
-              >
-                {item.label}
-              </button>
-            ))}
+      <section className="hero">
+        <div className="heroLeft">
+          <p className="kicker">30年教育一线经验 · 教师AI工具实践者</p>
+          <h1>有困难，找村长。</h1>
+          <p>
+            我是村长，30年教育一线经验。不谈空泛AI概念，只专门解决老师真实问题：AI素养测评、名师课堂设计、作业讲评、能力卡点诊断等。
+          </p>
+          <div className="chips">
+            <span>AI素养测评</span>
+            <span>课堂设计</span>
+            <span>作业讲评</span>
+            <span>分层作业</span>
           </div>
         </div>
-      </form>
 
-      <section className="grid">
-        {cards.map((card) => (
-          <article className="card" key={card.title}>
-            <div className="cardHead">
-              <h2>{card.title}</h2>
-              <button type="button" className="copyBtn" onClick={() => copyCard(card.title, card.value)}>
-                {copiedCardTitle === card.title ? "已复制" : "复制"}
-              </button>
-            </div>
-            <pre>{card.value || "点击“生成讲评与反馈”后显示内容。"}</pre>
-          </article>
-        ))}
+        <aside className="heroCard">
+          <Image
+            src={photoSrc}
+            alt="个人主页照片"
+            className="portrait"
+            width={420}
+            height={560}
+            priority
+            unoptimized
+          />
+          <label className="uploadBtn">
+            更换照片
+            <input type="file" accept="image/*" onChange={onPickPhoto} />
+          </label>
+          <h2>村长</h2>
+          <h3>教师AI工具设计者</h3>
+          <p>做了30年教育，最想解决的不是炫技问题，而是老师每天都绕不开的重复劳动。</p>
+          <div className="stats">
+            <div><b>30年</b><small>教育一线经验</small></div>
+            <div><b>4类</b><small>工具方向</small></div>
+            <div><b>1件事</b><small>先解真实问题</small></div>
+          </div>
+        </aside>
       </section>
 
-      <section className="feedback">
-        <h3>问题：这份内容你觉得能用吗？</h3>
-        <div className="feedbackOptions">
-          {feedbackOptions.map((option) => (
-            <button
-              key={option}
-              type="button"
-              className={option === selectedFeedback ? "option active" : "option"}
-              onClick={() => setSelectedFeedback(option)}
-            >
-              {option}
-            </button>
+      <section className="section">
+        <p className="label">SERVICES</p>
+        <h2>我现在正在做什么</h2>
+        <div className="grid3">
+          {serviceCards.map((card) => (
+            <article key={card.title}>
+              <h3>{card.title}</h3>
+              <p>{card.text}</p>
+            </article>
           ))}
         </div>
-
-        <textarea
-          className="input"
-          rows={3}
-          value={feedbackText}
-          onChange={(e) => setFeedbackText(e.target.value)}
-          placeholder="哪句话你觉得不像老师说的？可以直接写在这里。"
-        />
-
-        <button type="button" className="feedbackSubmit" onClick={submitFeedback}>
-          提交反馈
-        </button>
       </section>
-
-      <footer>{message ? <p className="message">{message}</p> : null}</footer>
     </main>
   );
 }
