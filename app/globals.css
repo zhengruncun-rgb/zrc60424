@@ -483,20 +483,14 @@ main {
   padding: 14px 16px;
 }
 
-.resultDetail summary {
+.resultCardHeader {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  list-style: none;
-  cursor: pointer;
 }
 
-.resultDetail summary::-webkit-details-marker {
-  display: none;
-}
-
-.resultDetail summary span {
+.resultCardHeader span {
   color: #103d31;
   font-weight: 900;
 }

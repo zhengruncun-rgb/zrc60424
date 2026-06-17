@@ -346,8 +346,8 @@ export default function HomePage() {
 
           <div className="resultCards">
             {cards.map(([title, value]) => (
-              <details className="resultDetail" key={title} open={title === "能力卡点诊断"}>
-                <summary>
+              <article className="resultDetail" key={title}>
+                <div className="resultCardHeader">
                   <span>{title}</span>
                   <button
                     type="button"
@@ -360,9 +360,9 @@ export default function HomePage() {
                   >
                     {copiedCardTitle === title ? "已复制" : "复制"}
                   </button>
-                </summary>
+                </div>
                 <pre>{value || "这一块暂时没生成完整，可以先复制上面的能力卡点诊断，再重新生成一次。"}</pre>
-              </details>
+              </article>
             ))}
           </div>
         </section>

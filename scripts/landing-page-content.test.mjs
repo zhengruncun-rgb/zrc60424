@@ -36,4 +36,6 @@ assert.ok(css.includes("#0f5a46"), "Expected warm ink-green primary color");
 assert.ok(!css.includes("#2855ff"), "Old technology-blue primary color should be removed");
 assert.ok(!css.includes("font-size: clamp(34px, 6vw, 66px)"), "Hero headline should not be oversized");
 assert.ok(page.includes("这一块暂时没生成完整"), "Empty result modules need a teacher-friendly fallback");
+assert.ok(!page.includes("<details className=\"resultDetail\""), "Generated result cards should stay expanded, not hidden behind accordions");
+assert.ok(css.includes("resultCardHeader"), "Expanded result cards need a visible card header");
 assert.ok(ai.includes("completeResult"), "Generated result should be completed before rendering");
