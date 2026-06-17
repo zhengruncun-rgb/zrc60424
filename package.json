@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "next dev",
     "build": "next build",
-    "test": "node scripts/landing-page-content.test.mjs",
+    "test": "node scripts/landing-page-content.test.mjs && node scripts/feedback-subject-fallback.test.mjs",
     "start": "next start",
     "lint": "next lint"
   },
