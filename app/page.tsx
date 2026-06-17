@@ -41,7 +41,7 @@ const workflowSteps = [
 ];
 
 const toolkitItems = ["公开课磨课助手", "班主任通知模板", "教学反思助手", "AI减负案例库"];
-const toolboxItems = ["讲评助手", "磨课助手", "分层作业助手"];
+const toolboxItems = ["✓ 讲评助手", "✓ 公开课磨课助手（开发中）", "✓ 分层作业助手（开发中）"];
 
 export default function HomePage() {
   const [userInput, setUserInput] = useState("");
@@ -175,6 +175,7 @@ export default function HomePage() {
           <a href="#case">真实案例</a>
           <a href="#tool">免费体验</a>
           <a href="#toolbox">教师AI工具箱</a>
+          <a className="navCta" href="#qr-codes">领取教师AI工具包</a>
         </div>
       </nav>
 
@@ -182,9 +183,9 @@ export default function HomePage() {
         <div className="heroInner">
           <div className="heroCopy">
             <span className="eyebrow">课后讲评与反馈助手</span>
-            <h1>课后讲评，不必再从一堆错题里硬熬</h1>
+            <h1>讲评课最难的，从来不是讲题</h1>
             <p>
-              输入学生典型错误，3分钟看清能力卡点，整理出明天能讲的讲评建议。
+              而是不知道学生到底错在哪。把学生怎么错说清楚，AI帮你整理明天能讲的讲评建议。
             </p>
             <div className="heroActions">
               <button type="button" className="primary" onClick={scrollToTool}>立即免费体验</button>
@@ -252,27 +253,28 @@ export default function HomePage() {
       <section className="section caseSection" id="case">
         <div className="sectionHead">
           <span className="eyebrow">先看一个作业讲评例子</span>
-          <h2>一个真实案例</h2>
+          <h2>真实老师案例</h2>
         </div>
         <div className="caseCompare">
           <article className="casePanel">
-            <span>输入内容</span>
-            <pre>{`五年级数学
-分数乘法
-错误率42%
+            <span>李老师｜五年级语文｜阅读理解</span>
+            <pre>{`全班45人，18人失分。
 
-主要问题：
-单位不统一
-计算顺序错误
-不会说明为什么这样列式`}</pre>
+题目：
+老汉是个怎样的人？
+请结合两处内容回答。
+
+学生主要问题：
+只抄一句原文，
+不会“观点+依据”作答。`}</pre>
           </article>
           <article className="casePanel outputPanel">
-            <span>输出结果</span>
+            <span>AI生成结果</span>
             <ul>
-              <li>学生主要卡在“单位量理解”和“数量关系表达”</li>
-              <li>先让学生说清每一步算的是什么</li>
-              <li>用一道同构题检查是否能迁移</li>
-              <li>生成一段温和、具体的家长反馈</li>
+              <li>能力卡点：没有先概括人物特点，只会摘抄文本</li>
+              <li>推荐讲法：先圈题干“怎样的人”，再补“观点+依据”框架</li>
+              <li>课堂追问：这处描写能证明老汉的哪个特点？</li>
+              <li>变式检测：换一个人物，让学生独立写出一组观点和依据</li>
             </ul>
           </article>
         </div>
@@ -370,7 +372,7 @@ export default function HomePage() {
         {apiData ? (
           <section className="afterResultCta">
             <div>
-              <span className="eyebrow">喜欢这个结果？</span>
+              <span className="eyebrow">这个结果有帮助吗？</span>
               <h2>领取更多教师AI工具</h2>
               <p>加入教师AI实验群，后续一起测试公开课磨课、教学反思、班主任通知等小工具。</p>
             </div>
@@ -426,7 +428,7 @@ export default function HomePage() {
       <section className="section toolboxSection" id="toolbox">
         <div className="sectionHead">
           <span className="eyebrow">教师AI工具箱</span>
-          <h2>以后不再做多个网站，围绕老师高频任务慢慢扩展</h2>
+          <h2>围绕老师高频任务，慢慢做成一套能用的小工具</h2>
         </div>
         <div className="toolboxList">
           {toolboxItems.map((item) => <span key={item}>{item}</span>)}

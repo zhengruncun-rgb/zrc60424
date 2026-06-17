@@ -58,8 +58,18 @@ main {
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 18px;
+  align-items: center;
   color: #52645d;
   font-size: 14px;
+}
+
+.navCta {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: #0f5a46;
+  color: #ffffff;
+  font-weight: 800;
+  box-shadow: 0 10px 22px rgba(15, 90, 70, 0.14);
 }
 
 .heroBand {

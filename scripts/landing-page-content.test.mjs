@@ -6,18 +6,23 @@ const css = readFileSync("app/globals.css", "utf8");
 const ai = readFileSync("lib/ai.ts", "utf8");
 
 [
-  "课后讲评，不必再从一堆错题里硬熬",
-  "输入学生典型错误，3分钟看清能力卡点，整理出明天能讲的讲评建议。",
+  "讲评课最难的，从来不是讲题",
+  "而是不知道学生到底错在哪",
   "先看一个作业讲评例子",
   "老师常卡住的不是答案，而是这三件事",
   "从学生错误到明天讲法，只走三步",
-  "一个真实案例",
+  "真实老师案例",
+  "李老师｜五年级语文｜阅读理解",
+  "观点+依据",
   "1995年参加教育工作",
   "领取教师AI工具包",
   "加入教师AI实验群",
   "一键填充示例",
+  "这个结果有帮助吗？",
   "领取更多教师AI工具",
   "教师AI工具箱",
+  "公开课磨课助手（开发中）",
+  "分层作业助手（开发中）",
   "productPreview",
   "workflowGrid",
   "painGrid",
@@ -33,6 +38,7 @@ const ai = readFileSync("lib/ai.ts", "utf8");
 });
 
 assert.ok(css.includes("#0f5a46"), "Expected warm ink-green primary color");
+assert.ok(css.includes(".navCta"), "Top navigation should include a lead-capture CTA");
 assert.ok(!css.includes("#2855ff"), "Old technology-blue primary color should be removed");
 assert.ok(!css.includes("font-size: clamp(34px, 6vw, 66px)"), "Hero headline should not be oversized");
 assert.ok(page.includes("这一块暂时没生成完整"), "Empty result modules need a teacher-friendly fallback");
