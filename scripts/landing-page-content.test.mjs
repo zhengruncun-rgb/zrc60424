@@ -8,6 +8,9 @@ const ai = readFileSync("lib/ai.ts", "utf8");
 [
   "讲评课最难的，从来不是讲题",
   "而是不知道学生到底错在哪",
+  "办公室里的真实一刻",
+  "晚上 11:08",
+  "不是替老师讲课",
   "先看一个作业讲评例子",
   "老师常卡住的不是答案，而是这三件事",
   "从学生错误到明天讲法，只走三步",
@@ -39,6 +42,8 @@ const ai = readFileSync("lib/ai.ts", "utf8");
 
 assert.ok(css.includes("#0f5a46"), "Expected warm ink-green primary color");
 assert.ok(css.includes(".navCta"), "Top navigation should include a lead-capture CTA");
+assert.ok(css.includes("Source Han Serif SC"), "Hero and section headings should use a warmer serif stack");
+assert.ok(css.includes(".scenePanel"), "Hero should include a teacher-scene visual panel");
 assert.ok(!css.includes("#2855ff"), "Old technology-blue primary color should be removed");
 assert.ok(!css.includes("font-size: clamp(34px, 6vw, 66px)"), "Hero headline should not be oversized");
 assert.ok(page.includes("这一块暂时没生成完整"), "Empty result modules need a teacher-friendly fallback");

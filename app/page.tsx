@@ -198,23 +198,21 @@ export default function HomePage() {
             </div>
           </div>
 
-          <aside className="productPreview" aria-label="产品预览">
-            <div className="previewTop">
-              <span>作业讲评案例</span>
-              <strong>五年级数学</strong>
-            </div>
-            <div className="previewInput">
-              <b>老师输入</b>
-              <p>分数应用题错误率35%，主要问题是审题不清、单位“1”找不准。</p>
+          <aside className="productPreview heroStoryCard" aria-label="产品预览">
+            <div className="scenePanel">
+              <span>办公室里的真实一刻</span>
+              <strong>晚上 11:08</strong>
+              <p>试卷、作业本、红笔摊在桌上。老师知道学生错了，却还要把明天怎么讲重新理一遍。</p>
             </div>
             <div className="previewOutput">
-              <b>系统先判断</b>
+              <b>AI先帮老师理清</b>
               <ul>
-                <li>卡点：审题路径不稳定</li>
-                <li>讲法：先让学生说清题意</li>
-                <li>检测：换一道同构题当堂复检</li>
+                <li>学生真正卡在哪个能力点</li>
+                <li>明天讲评先讲什么、后讲什么</li>
+                <li>用哪一道变式题当堂检测</li>
               </ul>
             </div>
+            <div className="previewNote">不是替老师讲课，而是帮老师把讲评思路先整理出来。</div>
           </aside>
         </div>
       </section>
